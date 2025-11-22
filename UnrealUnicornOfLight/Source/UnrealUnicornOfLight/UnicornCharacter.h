@@ -43,10 +43,28 @@ public:
 	float MaxFallSpeed = 2000.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Jumps")
+	float MinJumpHeight = 100.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Jumps")
+	float MaxJumpHeight = 300.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Jumps")
+	float JumpHoldTimeForMaxHeight = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Jumps")
 	float JumpHeight = 240.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Jumps")
 	float JumpTime = 0.75f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Jumps")
+	float DoubleJumpPotency = 0.9f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement|Jumps")
+	float CurrentJumpHoldTime = 0.0f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement|Jumps")
+	float CurrentJumpVelocity;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement|Jumps")
 	float JumpVelocity;
@@ -97,6 +115,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void ApplyCustomPhysics(float DeltaTime);
+
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void CalculateVariableJumpVelocity();
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void PerformJump();

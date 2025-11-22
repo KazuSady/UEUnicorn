@@ -40,6 +40,11 @@ void AUnicornCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	check(CachedMovementComponent);
+	if (bIsJumpHeld)
+	{
+		CurrentJumpHoldTime += DeltaTime;
+	}
+
 	if (CachedMovementComponent && CachedMovementComponent->IsFalling())
 	{
 		TimeInAir += DeltaTime;
@@ -125,12 +130,25 @@ void AUnicornCharacter::ApplyCustomPhysics(float DeltaTime)
 	}
 }
 
+void AUnicornCharacter::CalculateVariableJumpVelocity()
+{
+	const float ClampedHoldTime = FMath::Min(CurrentJumpHoldTime, JumpHoldTimeForMaxHeight);
+	const float CurrentJumpHeight = FMath::Lerp(MinJumpHeight, MaxJumpHeight, 
+		ClampedHoldTime / JumpHoldTimeForMaxHeight);
+
+	CurrentJumpVelocity = FMath::Sqrt(2.f * JumpGravity * CurrentJumpHeight);
+}
+
 void AUnicornCharacter::PerformJump()
 {
-	if (CachedMovementComponent) 
+	if (CachedMovementComponent)
 	{
+		CalculateVariableJumpVelocity();
+
 		CachedMovementComponent->Velocity.Z = JumpVelocity;
 		CachedMovementComponent->SetMovementMode(MOVE_Falling);
+
+		CurrentJumpHoldTime = 0.0f;
 	}
 }
 
@@ -140,9 +158,11 @@ void AUnicornCharacter::PerformDoubleJump()
 	{
 		if (CachedMovementComponent)
 		{
-			CachedMovementComponent->Velocity.Z = JumpVelocity * 0.9f; // Double jump is slightly weaker
+			CalculateVariableJumpVelocity();
+			CachedMovementComponent->Velocity.Z = JumpVelocity * DoubleJumpPotency; // Double jump is slightly weaker
 		}
 		bCanDoubleJump = false;
+		CurrentJumpHoldTime = 0.0f;
 	}
 }
 
@@ -157,6 +177,7 @@ void AUnicornCharacter::MoveRight(const float Value)
 void AUnicornCharacter::OnJumpPressed()
 {
 	bIsJumpHeld = true;
+	CurrentJumpHoldTime = 0.0f;
 
 	if (CachedMovementComponent)
 	{
