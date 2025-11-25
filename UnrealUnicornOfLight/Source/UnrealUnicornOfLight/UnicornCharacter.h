@@ -34,7 +34,7 @@ public:
 	float UnicornJumpBuffer = 0.15f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Physics")
-	float JumpHoldGravityScale = 0.5f; // Reduces gravity while holding jump
+	float JumpHoldGravityScale = 0.2f; // Reduces gravity while holding jump
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Physics")
 	float FallGravityScale = 2.0f; // Increases gravity when falling
@@ -43,16 +43,13 @@ public:
 	float MaxFallSpeed = 2000.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Jumps")
-	float MinJumpHeight = 100.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Jumps")
-	float MaxJumpHeight = 300.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Jumps")
-	float JumpHoldTimeForMaxHeight = 0.5f;
+	float MinJumpHeight = 120.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Jumps")
 	float JumpHeight = 240.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Jumps")
+	float JumpHoldTimeForMaxHeight = 0.15f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Jumps")
 	float JumpTime = 0.75f;
@@ -62,9 +59,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement|Jumps")
 	float CurrentJumpHoldTime = 0.0f;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement|Jumps")
-	float CurrentJumpVelocity;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement|Jumps")
 	float JumpVelocity;
@@ -90,6 +84,8 @@ private:
 	float RemainingCoyoteTime = 0.0f;
 
 	float RemainingJumpBufferTime = 0.0f;
+
+	float TargetMaxVelocity = 0.0f;
 
 	bool bWasOnGround = false;
 
@@ -117,9 +113,6 @@ protected:
 	void ApplyCustomPhysics(float DeltaTime);
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
-	void CalculateVariableJumpVelocity();
-
-	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void PerformJump();
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
@@ -129,6 +122,8 @@ public:
 	void MoveRight(const float Value);
 
 	void OnJumpPressed();
+
+	void OnJumpHeld();
 
 	void OnJumpReleased();
 };

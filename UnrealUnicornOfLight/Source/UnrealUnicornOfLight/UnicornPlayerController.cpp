@@ -64,6 +64,7 @@ void AUnicornPlayerController::OnPossess(APawn* InPawn)
                     if (LoadedJumpAction)
                     {
                         EnhancedInputComponent->BindAction(LoadedJumpAction, ETriggerEvent::Started, this, &AUnicornPlayerController::OnJumpPressed);
+                        EnhancedInputComponent->BindAction(LoadedJumpAction, ETriggerEvent::Ongoing, this, &AUnicornPlayerController::OnJumpHeld);
                         EnhancedInputComponent->BindAction(LoadedJumpAction, ETriggerEvent::Completed, this, &AUnicornPlayerController::OnJumpReleased);
                     }
                     bInputInitialized = true;
@@ -112,6 +113,18 @@ void AUnicornPlayerController::OnJumpPressed()
     if (Unicorn.IsValid())
     {
         Unicorn->OnJumpPressed();
+    }
+    else
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, TEXT("No Unicorn Character possessed!"));
+    }
+}
+
+void AUnicornPlayerController::OnJumpHeld()
+{
+    if (Unicorn.IsValid())
+    {
+        Unicorn->OnJumpHeld();
     }
     else
     {

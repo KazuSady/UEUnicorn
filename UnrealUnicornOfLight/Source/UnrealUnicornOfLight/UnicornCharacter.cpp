@@ -12,7 +12,7 @@
 // Sets default values
 AUnicornCharacter::AUnicornCharacter()
 {
- 	// Set this character to call Tick() every frame.  
+	// Set this character to call Tick() every frame.  
 	// You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -97,7 +97,7 @@ void AUnicornCharacter::CalculateJumpPhysics()
 
 	GEngine->AddOnScreenDebugMessage(
 		-1, 5.0f, FColor::Yellow,
-		FString::Printf(TEXT("Jump Velocity: %.2f, Gravity: %.2f"),	JumpVelocity, JumpGravity)
+		FString::Printf(TEXT("Jump Velocity: %.2f, Gravity: %.2f"), JumpVelocity, JumpGravity)
 	);
 }
 
@@ -130,25 +130,12 @@ void AUnicornCharacter::ApplyCustomPhysics(float DeltaTime)
 	}
 }
 
-void AUnicornCharacter::CalculateVariableJumpVelocity()
-{
-	const float ClampedHoldTime = FMath::Min(CurrentJumpHoldTime, JumpHoldTimeForMaxHeight);
-	const float CurrentJumpHeight = FMath::Lerp(MinJumpHeight, MaxJumpHeight, 
-		ClampedHoldTime / JumpHoldTimeForMaxHeight);
-
-	CurrentJumpVelocity = FMath::Sqrt(2.f * JumpGravity * CurrentJumpHeight);
-}
-
 void AUnicornCharacter::PerformJump()
 {
 	if (CachedMovementComponent)
 	{
-		CalculateVariableJumpVelocity();
-
 		CachedMovementComponent->Velocity.Z = JumpVelocity;
 		CachedMovementComponent->SetMovementMode(MOVE_Falling);
-
-		CurrentJumpHoldTime = 0.0f;
 	}
 }
 
@@ -158,8 +145,7 @@ void AUnicornCharacter::PerformDoubleJump()
 	{
 		if (CachedMovementComponent)
 		{
-			CalculateVariableJumpVelocity();
-			CachedMovementComponent->Velocity.Z = JumpVelocity * DoubleJumpPotency; // Double jump is slightly weaker
+			CachedMovementComponent->Velocity.Z = JumpVelocity * DoubleJumpPotency;  // Double jump is slightly weaker
 		}
 		bCanDoubleJump = false;
 		CurrentJumpHoldTime = 0.0f;
@@ -194,6 +180,11 @@ void AUnicornCharacter::OnJumpPressed()
 			RemainingJumpBufferTime = UnicornJumpBuffer;
 		}
 	}
+}
+
+void AUnicornCharacter::OnJumpHeld()
+{
+	bIsJumpHeld = true;
 }
 
 void AUnicornCharacter::OnJumpReleased()

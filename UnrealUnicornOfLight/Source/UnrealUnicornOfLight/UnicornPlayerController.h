@@ -54,6 +54,6 @@ protected:
 private:
     void OnMove(const FInputActionValue& Value);
     void OnJumpPressed();
+    void OnJumpHeld();
     void OnJumpReleased();
-
 };
