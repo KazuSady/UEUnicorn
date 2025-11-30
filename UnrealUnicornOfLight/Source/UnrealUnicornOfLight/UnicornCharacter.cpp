@@ -8,6 +8,10 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputAction.h"
 #include "InputMappingContext.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 AUnicornCharacter::AUnicornCharacter()
@@ -15,6 +19,11 @@ AUnicornCharacter::AUnicornCharacter()
 	// Set this character to call Tick() every frame.  
 	// You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	MovementTrailComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("MovementTrailComponent"));
+	MovementTrailComponent->SetupAttachment(RootComponent);
+	MovementTrailComponent->SetRelativeLocation(FVector::ZeroVector);
+	MovementTrailComponent->SetAutoActivate(true);
 
 	CachedMovementComponent = GetCharacterMovement();
 	if (CachedMovementComponent)
@@ -32,6 +41,14 @@ void AUnicornCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CalculateJumpPhysics();
+
+	if (MovementTrailComponent && TrailParticleSystem)
+	{
+		MovementTrailComponent->SetAsset(TrailParticleSystem);
+		GEngine->AddOnScreenDebugMessage(
+			-1, 5.0f, FColor::Yellow, TEXT("DUPA")
+		);
+	}
 }
 
 // Called every frame
@@ -97,7 +114,7 @@ void AUnicornCharacter::CalculateJumpPhysics()
 
 	GEngine->AddOnScreenDebugMessage(
 		-1, 5.0f, FColor::Yellow,
-		FString::Printf(TEXT("Jump Velocity: %.2f, Gravity: %.2f"), JumpVelocity, JumpGravity)
+		FString::Printf(TEXT("Calculated Physics - Jump Velocity: %.2f, Jump Gravity: %.2f"), JumpVelocity, JumpGravity)
 	);
 }
 
@@ -150,6 +167,76 @@ void AUnicornCharacter::PerformDoubleJump()
 		bCanDoubleJump = false;
 		CurrentJumpHoldTime = 0.0f;
 	}
+}
+
+void AUnicornCharacter::TakeDamage(int32 Damage)
+{
+	Health -= Damage;
+
+	if (Health <= 0)
+	{
+		Health = 0;
+		Respawn();
+	}
+}
+
+void AUnicornCharacter::Respawn()
+{
+	SetActorEnableCollision(false);
+	SetActorHiddenInGame(true);
+	DisableInput(nullptr);
+
+	if (DeathSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			DeathSound,
+			GetActorLocation()
+		);
+	}
+
+	if (MovementTrailComponent)
+	{
+		MovementTrailComponent->Deactivate();
+	}
+
+	if (DeathParticleSystem)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			DeathParticleSystem,
+			GetActorLocation(),
+			FRotator::ZeroRotator,
+			FVector(1.0f)
+		);
+	}
+
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AUnicornCharacter::FinishRespawn, 1.0f, false);
+}
+
+void AUnicornCharacter::FinishRespawn()
+{
+	Health = MaxHealth;
+
+	// Reset to spawn point
+	SetActorLocation(FVector(-120, -210, 110));
+
+	if (CachedMovementComponent)
+	{
+		CachedMovementComponent->Velocity = FVector::ZeroVector;
+		CachedMovementComponent->SetMovementMode(MOVE_Walking);
+	}
+
+	if (MovementTrailComponent)
+	{
+		MovementTrailComponent->ResetSystem();
+		MovementTrailComponent->Activate();
+	}
+
+	SetActorEnableCollision(true);
+	SetActorHiddenInGame(false);
+	EnableInput(nullptr); 
 }
 
 void AUnicornCharacter::MoveRight(const float Value)

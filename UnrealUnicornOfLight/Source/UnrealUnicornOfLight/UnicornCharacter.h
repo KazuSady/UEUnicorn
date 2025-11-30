@@ -10,6 +10,8 @@
 
 class UInputAction;
 class UInputMappingContext;
+class UNiagaraSystem;
+class UNiagaraComponent;
 
 UCLASS()
 class UNREALUNICORNOFLIGHT_API AUnicornCharacter : public ACharacter
@@ -17,6 +19,11 @@ class UNREALUNICORNOFLIGHT_API AUnicornCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	int32 Health = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	int32 MaxHealth = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Controls")
 	float UnicornAirControl = 0.8f;
@@ -79,6 +86,22 @@ public:
 	bool bIsDoubleJumpEnabled = true;
 
 private:
+	bool bWasOnGround = false;
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects|Movement")
+	TObjectPtr<UNiagaraComponent> MovementTrailComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effects|Movement")
+	TObjectPtr<UNiagaraSystem> TrailParticleSystem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effects|Death")
+	TObjectPtr<UNiagaraSystem> DeathParticleSystem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effects|Death")
+	TObjectPtr<USoundBase> DeathSound;
+
+private:
 	TObjectPtr<UCharacterMovementComponent> CachedMovementComponent;
 
 	float RemainingCoyoteTime = 0.0f;
@@ -86,8 +109,6 @@ private:
 	float RemainingJumpBufferTime = 0.0f;
 
 	float TargetMaxVelocity = 0.0f;
-
-	bool bWasOnGround = false;
 
 public:
 	// Sets default values for this character's properties
@@ -117,6 +138,15 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void PerformDoubleJump();
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void TakeDamage(int32 Damage = 1);
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void Respawn();
+
+private:
+	void FinishRespawn();
 
 public:
 	void MoveRight(const float Value);
