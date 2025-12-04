@@ -12,6 +12,8 @@ class UInputAction;
 class UInputMappingContext;
 class UNiagaraSystem;
 class UNiagaraComponent;
+class UPaperSprite;
+class UPaperSpriteComponent;
 
 UCLASS()
 class UNREALUNICORNOFLIGHT_API AUnicornCharacter : public ACharacter
@@ -102,6 +104,9 @@ public:
 	TObjectPtr<USoundBase> DeathSound;
 
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Sprite", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UPaperSpriteComponent> SpriteComponent;
+
 	TObjectPtr<UCharacterMovementComponent> CachedMovementComponent;
 
 	float RemainingCoyoteTime = 0.0f;
@@ -109,6 +114,8 @@ private:
 	float RemainingJumpBufferTime = 0.0f;
 
 	float TargetMaxVelocity = 0.0f;
+
+	float InitialXPosition = 0.0f;
 
 public:
 	// Sets default values for this character's properties

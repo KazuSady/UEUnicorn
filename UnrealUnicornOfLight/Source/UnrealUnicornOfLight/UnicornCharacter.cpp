@@ -10,6 +10,8 @@
 #include "InputMappingContext.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "PaperSprite.h"
+#include "PaperSpriteComponent.h"
 
 #include <Kismet/GameplayStatics.h>
 
@@ -25,6 +27,12 @@ AUnicornCharacter::AUnicornCharacter()
 	MovementTrailComponent->SetRelativeLocation(FVector::ZeroVector);
 	MovementTrailComponent->SetAutoActivate(true);
 
+	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("SpriteComponent"));
+	SpriteComponent->SetupAttachment(RootComponent);
+	SpriteComponent->SetRelativeLocation(FVector(290.0f, 0.0f, -260.0f));
+	SpriteComponent->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+	SpriteComponent->SetRelativeScale3D(FVector(0.05f, 0.05f, 0.05f));
+
 	CachedMovementComponent = GetCharacterMovement();
 	if (CachedMovementComponent)
 	{
@@ -33,6 +41,11 @@ AUnicornCharacter::AUnicornCharacter()
 		CachedMovementComponent->JumpZVelocity = 0.f; // Disables built-in jumps
 		CachedMovementComponent->AirControl = UnicornAirControl;
 		CachedMovementComponent->GroundFriction = UnicornGroundFriction;
+
+		// Prevent movement along X axis
+		CachedMovementComponent->bConstrainToPlane = true;
+		CachedMovementComponent->SetPlaneConstraintNormal(FVector(1.0f, 0.0f, 0.0f));
+		CachedMovementComponent->SetPlaneConstraintOrigin(GetActorLocation());
 	}
 }
 
@@ -41,13 +54,10 @@ void AUnicornCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CalculateJumpPhysics();
-
+	
 	if (MovementTrailComponent && TrailParticleSystem)
 	{
 		MovementTrailComponent->SetAsset(TrailParticleSystem);
-		GEngine->AddOnScreenDebugMessage(
-			-1, 5.0f, FColor::Yellow, TEXT("DUPA")
-		);
 	}
 }
 
@@ -220,7 +230,7 @@ void AUnicornCharacter::FinishRespawn()
 	Health = MaxHealth;
 
 	// Reset to spawn point
-	SetActorLocation(FVector(-120, -210, 110));
+	SetActorLocation(FVector(-140, -20, 40));
 
 	if (CachedMovementComponent)
 	{
