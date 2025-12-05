@@ -37,16 +37,21 @@ AUnicornCharacter::AUnicornCharacter()
 	if (CachedMovementComponent)
 	{
 		CachedMovementComponent->bOrientRotationToMovement = false;
+		CachedMovementComponent->bUseControllerDesiredRotation = false;
 		CachedMovementComponent->GravityScale = 1.f;
 		CachedMovementComponent->JumpZVelocity = 0.f; // Disables built-in jumps
 		CachedMovementComponent->AirControl = UnicornAirControl;
 		CachedMovementComponent->GroundFriction = UnicornGroundFriction;
 
 		// Prevent movement along X axis
-		CachedMovementComponent->bConstrainToPlane = true;
-		CachedMovementComponent->SetPlaneConstraintNormal(FVector(1.0f, 0.0f, 0.0f));
-		CachedMovementComponent->SetPlaneConstraintOrigin(GetActorLocation());
+		//CachedMovementComponent->bConstrainToPlane = true;
+		//CachedMovementComponent->SetPlaneConstraintNormal(FVector(1.0f, 0.0f, 0.0f));
+		//CachedMovementComponent->SetPlaneConstraintOrigin(GetActorLocation());
 	}
+
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
 }
 
 // Called when the game starts or when spawned
@@ -54,6 +59,8 @@ void AUnicornCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CalculateJumpPhysics();
+
+	InitialXPosition = GetActorLocation().X;
 	
 	if (MovementTrailComponent && TrailParticleSystem)
 	{
@@ -65,6 +72,11 @@ void AUnicornCharacter::BeginPlay()
 void AUnicornCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// Prevent movement along X axis
+	FVector CurrentLocation = GetActorLocation();
+	CurrentLocation.X = InitialXPosition;
+	SetActorLocation(CurrentLocation);
 
 	check(CachedMovementComponent);
 	if (bIsJumpHeld)
@@ -196,6 +208,14 @@ void AUnicornCharacter::Respawn()
 	SetActorHiddenInGame(true);
 	DisableInput(nullptr);
 
+	if (CachedMovementComponent)
+	{
+		CachedMovementComponent->Velocity = FVector::ZeroVector;
+		CachedMovementComponent->StopMovementImmediately();
+		CachedMovementComponent->DisableMovement();
+		CachedMovementComponent->ClearAccumulatedForces();
+	}
+
 	if (DeathSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(
@@ -235,6 +255,7 @@ void AUnicornCharacter::FinishRespawn()
 	if (CachedMovementComponent)
 	{
 		CachedMovementComponent->Velocity = FVector::ZeroVector;
+		CachedMovementComponent->ClearAccumulatedForces();
 		CachedMovementComponent->SetMovementMode(MOVE_Walking);
 	}
 
@@ -254,6 +275,10 @@ void AUnicornCharacter::MoveRight(const float Value)
 	if (Value != 0.0f)
 	{
 		AddMovementInput(FVector(0.f, 1.f, 0.f), Value);
+
+		FRotator Rot = GetActorRotation();
+		Rot.Yaw = Value > 0 ? -90.0f : 90.f;
+		SetActorRotation(Rot);
 	}
 }
 
