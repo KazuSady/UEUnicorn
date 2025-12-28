@@ -1,6 +1,9 @@
 // Copyright SomethingNotRandom. All Rights Reserved.
 
 #include "UnicornCharacter.h"
+
+#include <iostream>
+
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -276,9 +279,7 @@ void AUnicornCharacter::MoveRight(const float Value)
 	{
 		AddMovementInput(FVector(0.f, 1.f, 0.f), Value);
 
-		FRotator Rot = GetActorRotation();
-		Rot.Yaw = Value > 0 ? -90.0f : 90.f;
-		SetActorRotation(Rot);
+		SpriteComponent->SetRelativeRotation(FRotator(0.0f, Value > 0 ? 180.0f : 0.0f, 0.0f));
 	}
 }
 
