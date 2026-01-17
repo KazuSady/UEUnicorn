@@ -45,11 +45,6 @@ AUnicornCharacter::AUnicornCharacter()
 		CachedMovementComponent->JumpZVelocity = 0.f; // Disables built-in jumps
 		CachedMovementComponent->AirControl = UnicornAirControl;
 		CachedMovementComponent->GroundFriction = UnicornGroundFriction;
-
-		// Prevent movement along X axis
-		//CachedMovementComponent->bConstrainToPlane = true;
-		//CachedMovementComponent->SetPlaneConstraintNormal(FVector(1.0f, 0.0f, 0.0f));
-		//CachedMovementComponent->SetPlaneConstraintOrigin(GetActorLocation());
 	}
 
 	bUseControllerRotationPitch = false;
@@ -313,4 +308,8 @@ void AUnicornCharacter::OnJumpHeld()
 void AUnicornCharacter::OnJumpReleased()
 {
 	bIsJumpHeld = false;
+	if (CachedMovementComponent && CachedMovementComponent->Velocity.Z > 0)
+	{
+		CachedMovementComponent->Velocity.Z *= 0.65f;
+	}
 }
