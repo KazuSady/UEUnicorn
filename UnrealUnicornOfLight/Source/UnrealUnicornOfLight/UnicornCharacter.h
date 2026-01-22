@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "PaperFlipbookComponent.h"
+#include "PaperFlipbook.h"
 
 #include "UnicornCharacter.generated.h"
 
@@ -12,8 +14,8 @@ class UInputAction;
 class UInputMappingContext;
 class UNiagaraSystem;
 class UNiagaraComponent;
-class UPaperSprite;
-class UPaperSpriteComponent;
+class UPaperFlipbookComponent;
+class UPaperFlipbook;
 
 UCLASS()
 class UNREALUNICORNOFLIGHT_API AUnicornCharacter : public ACharacter
@@ -102,10 +104,19 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effects|Death")
 	TObjectPtr<USoundBase> DeathSound;
+	
+	UPROPERTY(EditAnywhere, Category="Animation")
+	UPaperFlipbook* IdleFlipbook;
+
+	UPROPERTY(EditAnywhere, Category="Animation")
+	UPaperFlipbook* RunFlipbook;
+
+	UPROPERTY(EditAnywhere, Category="Animation")
+	UPaperFlipbook* JumpFlipbook;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Sprite", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UPaperSpriteComponent> SpriteComponent;
+	TObjectPtr<UPaperFlipbookComponent> FlipbookComponent;
 
 	TObjectPtr<UCharacterMovementComponent> CachedMovementComponent;
 
@@ -161,6 +172,8 @@ public:
 	void OnJumpPressed();
 
 	void OnJumpHeld();
+	
+	void UpdateAnimation();
 
 	void OnJumpReleased();
 };

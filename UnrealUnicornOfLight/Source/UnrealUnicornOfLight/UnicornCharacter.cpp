@@ -30,11 +30,11 @@ AUnicornCharacter::AUnicornCharacter()
 	MovementTrailComponent->SetRelativeLocation(FVector::ZeroVector);
 	MovementTrailComponent->SetAutoActivate(true);
 
-	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("SpriteComponent"));
-	SpriteComponent->SetupAttachment(RootComponent);
-	SpriteComponent->SetRelativeLocation(FVector(290.0f, 0.0f, -260.0f));
-	SpriteComponent->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-	SpriteComponent->SetRelativeScale3D(FVector(0.05f, 0.05f, 0.05f));
+	FlipbookComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("FlipbookComponent"));
+	FlipbookComponent->SetupAttachment(RootComponent);
+	FlipbookComponent->SetRelativeLocation(FVector(290.0f, 0.0f, -260.0f));
+	FlipbookComponent->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+	FlipbookComponent->SetRelativeScale3D(FVector(0.05f, 0.05f, 0.05f));
 
 	CachedMovementComponent = GetCharacterMovement();
 	if (CachedMovementComponent)
@@ -118,6 +118,7 @@ void AUnicornCharacter::Tick(float DeltaTime)
 		}
 
 		bWasOnGround = bIsOnGround;
+		UpdateAnimation();
 	}
 }
 
@@ -200,6 +201,30 @@ void AUnicornCharacter::TakeDamage(int32 Damage)
 	}
 }
 
+void AUnicornCharacter::UpdateAnimation()
+{
+	if (!FlipbookComponent || !CachedMovementComponent) return;
+
+	UPaperFlipbook* Desired = IdleFlipbook;
+
+	const float Speed = FMath::Abs(CachedMovementComponent->Velocity.Y);
+
+	if (CachedMovementComponent->IsFalling())
+	{
+		Desired = JumpFlipbook;
+	}
+	else if (Speed > 5.f)
+	{
+		Desired = RunFlipbook;
+	}
+
+	if (FlipbookComponent->GetFlipbook() != Desired)
+	{
+		FlipbookComponent->SetFlipbook(Desired);
+	}
+}
+
+
 void AUnicornCharacter::Respawn()
 {
 	SetActorEnableCollision(false);
@@ -274,7 +299,7 @@ void AUnicornCharacter::MoveRight(const float Value)
 	{
 		AddMovementInput(FVector(0.f, 1.f, 0.f), Value);
 
-		SpriteComponent->SetRelativeRotation(FRotator(0.0f, Value > 0 ? 180.0f : 0.0f, 0.0f));
+		FlipbookComponent->SetRelativeRotation(FRotator(0.0f, Value > 0 ? 180.0f : 0.0f, 0.0f));
 	}
 }
 
