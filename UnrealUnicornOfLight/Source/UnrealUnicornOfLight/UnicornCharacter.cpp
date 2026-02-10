@@ -36,6 +36,11 @@ AUnicornCharacter::AUnicornCharacter()
 	FlipbookComponent->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
 	FlipbookComponent->SetRelativeScale3D(FVector(0.05f, 0.05f, 0.05f));
 
+	RunAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("RunAudioComponent"));
+	RunAudioComponent->SetupAttachment(RootComponent);
+	RunAudioComponent->bAutoActivate = false;
+	RunAudioComponent->bIsUISound = false;
+
 	CachedMovementComponent = GetCharacterMovement();
 	if (CachedMovementComponent)
 	{
@@ -63,6 +68,10 @@ void AUnicornCharacter::BeginPlay()
 	if (MovementTrailComponent && TrailParticleSystem)
 	{
 		MovementTrailComponent->SetAsset(TrailParticleSystem);
+	}
+	if (RunAudioComponent && RunSound)
+	{
+		RunAudioComponent->SetSound(RunSound);
 	}
 }
 
@@ -172,6 +181,14 @@ void AUnicornCharacter::PerformJump()
 {
 	if (CachedMovementComponent)
 	{
+		if (JumpSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				JumpSound,
+				GetActorLocation()
+			);
+		}
 		CachedMovementComponent->Velocity.Z = JumpVelocity;
 		CachedMovementComponent->SetMovementMode(MOVE_Falling);
 	}
@@ -183,6 +200,14 @@ void AUnicornCharacter::PerformDoubleJump()
 	{
 		if (CachedMovementComponent)
 		{
+			if (JumpSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					this,
+					JumpSound,
+					GetActorLocation()
+				);
+			}
 			CachedMovementComponent->Velocity.Z = JumpVelocity * DoubleJumpPotency;  // Double jump is slightly weaker
 		}
 		bCanDoubleJump = false;
@@ -208,14 +233,32 @@ void AUnicornCharacter::UpdateAnimation()
 	UPaperFlipbook* Desired = IdleFlipbook;
 
 	const float Speed = FMath::Abs(CachedMovementComponent->Velocity.Y);
+	const bool bOnGround = CachedMovementComponent->IsMovingOnGround();
 
 	if (CachedMovementComponent->IsFalling())
 	{
 		Desired = JumpFlipbook;
+
+		if (RunAudioComponent && RunAudioComponent->IsPlaying())
+		{
+			RunAudioComponent->Stop();
+		}
 	}
 	else if (Speed > 5.f)
 	{
 		Desired = RunFlipbook;
+
+		if (RunAudioComponent && !RunAudioComponent->IsPlaying())
+		{
+			RunAudioComponent->Play();
+		}
+	}
+	else
+	{
+		if (RunAudioComponent && RunAudioComponent->IsPlaying())
+		{
+			RunAudioComponent->Stop();
+		}
 	}
 
 	if (FlipbookComponent->GetFlipbook() != Desired)

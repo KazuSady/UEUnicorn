@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "Components/AudioComponent.h"
 #include "PaperFlipbookComponent.h"
 #include "PaperFlipbook.h"
 
@@ -104,6 +105,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effects|Death")
 	TObjectPtr<USoundBase> DeathSound;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effects|Jump")
+	TObjectPtr<USoundBase> JumpSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effects|Run")
+	TObjectPtr<USoundBase> RunSound;
+
 	
 	UPROPERTY(EditAnywhere, Category="Animation")
 	UPaperFlipbook* IdleFlipbook;
@@ -113,6 +120,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Animation")
 	UPaperFlipbook* JumpFlipbook;
+	
+	UPROPERTY(EditAnywhere, Category="Sound")
+	UAudioComponent* RunAudioComponent;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Sprite", meta = (AllowPrivateAccess = "true"))
