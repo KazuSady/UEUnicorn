@@ -130,6 +130,8 @@ private:
 
 	TObjectPtr<UCharacterMovementComponent> CachedMovementComponent;
 
+	TObjectPtr<UCapsuleComponent> CachedCapsuleComponent;
+
 	float RemainingCoyoteTime = 0.0f;
 
 	float RemainingJumpBufferTime = 0.0f;
@@ -137,6 +139,8 @@ private:
 	float TargetMaxVelocity = 0.0f;
 
 	float InitialXPosition = 0.0f;
+
+	bool bIgnoreOneWayPlatform = false;
 
 public:
 	// Sets default values for this character's properties

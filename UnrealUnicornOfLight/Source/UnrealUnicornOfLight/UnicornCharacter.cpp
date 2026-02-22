@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "Components/InputComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "EnhancedInputComponent.h"
@@ -55,6 +56,8 @@ AUnicornCharacter::AUnicornCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+
+	CachedCapsuleComponent = GetCapsuleComponent();
 }
 
 // Called when the game starts or when spawned
@@ -104,6 +107,22 @@ void AUnicornCharacter::Tick(float DeltaTime)
 	ApplyCustomPhysics(DeltaTime);
 	if (CachedMovementComponent)
 	{
+		const float ZVelocity = CachedMovementComponent->Velocity.Z;
+
+		bool bShouldIgnore =
+			CachedMovementComponent->IsFalling() &&
+			CachedMovementComponent->Velocity.Z > 0.f;
+
+		if (bShouldIgnore != bIgnoreOneWayPlatform)
+		{
+			CachedCapsuleComponent->SetCollisionResponseToChannel(
+				ECC_GameTraceChannel1,
+				bShouldIgnore ? ECR_Ignore : ECR_Block
+			);
+
+			bIgnoreOneWayPlatform = bShouldIgnore;
+		}
+
 		bool bIsOnGround = CachedMovementComponent->IsMovingOnGround();
 		if (bIsOnGround)
 		{
